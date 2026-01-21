@@ -25,6 +25,13 @@ def init_db():
             dias_uti INTEGER NOT NULL,
             glasgow_ingreso INTEGER NOT NULL,
             glasgow_actual INTEGER NOT NULL,
+            destino_post_uti TEXT,
+            tiene_drenaje BOOLEAN DEFAULT 0,
+            tipo_drenaje TEXT,
+            llevaba_casco BOOLEAN,
+            secuelas_motora BOOLEAN DEFAULT 0,
+            secuelas_neurologica BOOLEAN DEFAULT 0,
+            secuelas_cognitiva BOOLEAN DEFAULT 0,
             observaciones TEXT,
             fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             fecha_ultima_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -53,6 +60,8 @@ def init_db():
 def insertar_paciente(numero_historia, edad, sexo, fecha_ingreso, diagnostico, 
                      origen_tec, lesiones_asociadas, requiere_pic, requiere_arm, 
                      requiere_cranectomia, dias_uti, glasgow_ingreso, glasgow_actual, 
+                     destino_post_uti, tiene_drenaje, tipo_drenaje, llevaba_casco,
+                     secuelas_motora, secuelas_neurologica, secuelas_cognitiva,
                      observaciones):
     """Inserta un nuevo paciente en la base de datos"""
     try:
@@ -63,11 +72,15 @@ def insertar_paciente(numero_historia, edad, sexo, fecha_ingreso, diagnostico,
             INSERT INTO pacientes (
                 numero_historia, edad, sexo, fecha_ingreso, diagnostico, origen_tec,
                 lesiones_asociadas, requiere_pic, requiere_arm, requiere_cranectomia,
-                dias_uti, glasgow_ingreso, glasgow_actual, observaciones
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                dias_uti, glasgow_ingreso, glasgow_actual, destino_post_uti, tiene_drenaje,
+                tipo_drenaje, llevaba_casco, secuelas_motora, secuelas_neurologica,
+                secuelas_cognitiva, observaciones
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (numero_historia, edad, sexo, fecha_ingreso, diagnostico, origen_tec,
               lesiones_asociadas, requiere_pic, requiere_arm, requiere_cranectomia,
-              dias_uti, glasgow_ingreso, glasgow_actual, observaciones))
+              dias_uti, glasgow_ingreso, glasgow_actual, destino_post_uti, tiene_drenaje,
+              tipo_drenaje, llevaba_casco, secuelas_motora, secuelas_neurologica,
+              secuelas_cognitiva, observaciones))
         
         conn.commit()
         conn.close()

@@ -109,8 +109,25 @@ if menu == "Cargar Paciente":
             
             # Intervenciones
             requiere_pic = st.checkbox("Requiere PIC (Presión Intracraneal)")
+            
+            # Drenajes
+            tiene_drenaje = st.checkbox("¿Se colocó algún drenaje además de PIC?")
+            tipo_drenaje = None
+            if tiene_drenaje:
+                tipo_drenaje = st.selectbox("Tipo de drenaje*", [
+                    "DVE (Drenaje Ventricular Externo)",
+                    "Aspirativo"
+                ])
+            
             requiere_arm = st.checkbox("Requiere ARM (Asistencia Respiratoria Mecánica)")
             requiere_cranectomia = st.checkbox("Requiere Craniectomía")
+            
+            # Casco (solo para accidentes de moto)
+            llevaba_casco = None
+            if "moto" in origen_tec.lower():
+                st.markdown("---")
+                st.subheader("Información del Accidente")
+                llevaba_casco = st.checkbox("¿Llevaba casco puesto?")
             
             # Evolución
             dias_uti = st.number_input("Días de evolución en UTI*", min_value=0, value=1, 
@@ -119,6 +136,24 @@ if menu == "Cargar Paciente":
             # Glasgow
             glasgow_ingreso = st.slider("Glasgow al ingreso", min_value=3, max_value=15, value=8)
             glasgow_actual = st.slider("Glasgow actual", min_value=3, max_value=15, value=8)
+            
+            # Destino post-UTI
+            st.markdown("---")
+            st.subheader("Destino después de UTI")
+            destino_post_uti = st.selectbox("¿A dónde fue derivado el paciente?", [
+                "Aún en UTI",
+                "Cuidados Generales",
+                "UTIM",
+                "Derivado a otro centro",
+                "Óbito"
+            ])
+            
+            # Secuelas
+            st.markdown("---")
+            st.subheader("Secuelas del Paciente")
+            secuelas_motora = st.checkbox("Secuelas motoras")
+            secuelas_neurologica = st.checkbox("Secuelas neurológicas")
+            secuelas_cognitiva = st.checkbox("Secuelas cognitivas")
             
             # Observaciones
             observaciones = st.text_area("Observaciones adicionales", 
@@ -156,6 +191,13 @@ if menu == "Cargar Paciente":
                     dias_uti=dias_uti,
                     glasgow_ingreso=glasgow_ingreso,
                     glasgow_actual=glasgow_actual,
+                    destino_post_uti=destino_post_uti,
+                    tiene_drenaje=tiene_drenaje,
+                    tipo_drenaje=tipo_drenaje,
+                    llevaba_casco=llevaba_casco,
+                    secuelas_motora=secuelas_motora,
+                    secuelas_neurologica=secuelas_neurologica,
+                    secuelas_cognitiva=secuelas_cognitiva,
                     observaciones=observaciones
                 )
                 
@@ -215,6 +257,24 @@ elif menu == "Evolucionar Paciente":
                 with col3:
                     st.write(f"**Craniectomía:** {'✅ Sí' if paciente['requiere_cranectomia'] else '❌ No'}")
                 
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.write(f"**Drenaje:** {'✅ ' + str(paciente.get('tipo_drenaje', 'N/A')) if paciente.get('tiene_drenaje') else '❌ No'}")
+                with col2:
+                    st.write(f"**Destino:** {paciente.get('destino_post_uti', 'No especificado')}")
+                with col3:
+                    if "moto" in str(paciente['origen_tec']).lower() and paciente.get('llevaba_casco') is not None:
+                        st.write(f"**Casco:** {'✅ Sí' if paciente.get('llevaba_casco') else '❌ No'}")
+                
+                st.write("**Secuelas:**")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.write(f"Motora: {'✅' if paciente.get('secuelas_motora') else '❌'}")
+                with col2:
+                    st.write(f"Neurológica: {'✅' if paciente.get('secuelas_neurologica') else '❌'}")
+                with col3:
+                    st.write(f"Cognitiva: {'✅' if paciente.get('secuelas_cognitiva') else '❌'}")
+                
                 # Formulario de evolución
                 st.markdown("---")
                 st.subheader("🔄 Actualizar Evolución")
@@ -258,6 +318,26 @@ elif menu == "Evolucionar Paciente":
                             value=bool(paciente['requiere_pic'])
                         )
                         
+                        # Drenaje
+                        nueva_tiene_drenaje = st.checkbox(
+                            "¿Tiene drenaje además de PIC?",
+                            value=bool(paciente.get('tiene_drenaje', False))
+                        )
+                        
+                        nuevo_tipo_drenaje = None
+                        if nueva_tiene_drenaje:
+                            tipo_actual = paciente.get('tipo_drenaje', 'DVE (Drenaje Ventricular Externo)')
+                            opciones_drenaje = [
+                                "DVE (Drenaje Ventricular Externo)",
+                                "Aspirativo"
+                            ]
+                            indice_tipo = 0 if tipo_actual and "DVE" in tipo_actual else 1 if tipo_actual else 0
+                            nuevo_tipo_drenaje = st.selectbox(
+                                "Tipo de drenaje",
+                                opciones_drenaje,
+                                index=indice_tipo
+                            )
+                        
                         nueva_arm = st.checkbox(
                             "Requiere ARM",
                             value=bool(paciente['requiere_arm'])
@@ -266,6 +346,49 @@ elif menu == "Evolucionar Paciente":
                         nueva_cranectomia = st.checkbox(
                             "Requiere Craniectomía",
                             value=bool(paciente['requiere_cranectomia'])
+                        )
+                        
+                        # Destino post-UTI
+                        st.markdown("---")
+                        st.markdown("**Destino después de UTI**")
+                        opciones_destino = [
+                            "Aún en UTI",
+                            "Cuidados Generales",
+                            "UTIM",
+                            "Derivado a otro centro",
+                            "Óbito"
+                        ]
+                        destino_actual = paciente.get('destino_post_uti', 'Aún en UTI')
+                        indice_destino = opciones_destino.index(destino_actual) if destino_actual in opciones_destino else 0
+                        nuevo_destino = st.selectbox(
+                            "Destino",
+                            opciones_destino,
+                            index=indice_destino
+                        )
+                        
+                        # Casco (solo para moto)
+                        nuevo_llevaba_casco = None
+                        if "moto" in str(paciente['origen_tec']).lower():
+                            st.markdown("---")
+                            nuevo_llevaba_casco = st.checkbox(
+                                "¿Llevaba casco?",
+                                value=bool(paciente.get('llevaba_casco', False))
+                            )
+                        
+                        # Secuelas
+                        st.markdown("---")
+                        st.markdown("**Secuelas del Paciente**")
+                        nueva_secuela_motora = st.checkbox(
+                            "Secuelas motoras",
+                            value=bool(paciente.get('secuelas_motora', False))
+                        )
+                        nueva_secuela_neurologica = st.checkbox(
+                            "Secuelas neurológicas",
+                            value=bool(paciente.get('secuelas_neurologica', False))
+                        )
+                        nueva_secuela_cognitiva = st.checkbox(
+                            "Secuelas cognitivas",
+                            value=bool(paciente.get('secuelas_cognitiva', False))
                         )
                     
                     # Observaciones de evolución
@@ -316,6 +439,13 @@ elif menu == "Evolucionar Paciente":
                                 requiere_pic=nueva_pic,
                                 requiere_arm=nueva_arm,
                                 requiere_cranectomia=nueva_cranectomia,
+                                tiene_drenaje=nueva_tiene_drenaje,
+                                tipo_drenaje=nuevo_tipo_drenaje,
+                                destino_post_uti=nuevo_destino,
+                                llevaba_casco=nuevo_llevaba_casco,
+                                secuelas_motora=nueva_secuela_motora,
+                                secuelas_neurologica=nueva_secuela_neurologica,
+                                secuelas_cognitiva=nueva_secuela_cognitiva,
                                 observaciones=observaciones_actualizadas
                             )
                             
@@ -336,7 +466,7 @@ elif menu == "Ver Estadísticas":
         st.warning("⚠️ No hay datos registrados aún. Comience cargando pacientes.")
     else:
         # Métricas principales
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
             st.metric("Total Pacientes", len(df))
@@ -346,6 +476,9 @@ elif menu == "Ver Estadísticas":
             st.metric("Con ARM", df['requiere_arm'].sum())
         with col4:
             st.metric("Craniectomía", df['requiere_cranectomia'].sum())
+        with col5:
+            drenajes = df['tiene_drenaje'].sum() if 'tiene_drenaje' in df.columns else 0
+            st.metric("Con Drenaje", drenajes)
         
         st.markdown("---")
         
@@ -378,10 +511,13 @@ elif menu == "Ver Estadísticas":
                 'ARM': df['requiere_arm'].sum(),
                 'Craniectomía': df['requiere_cranectomia'].sum()
             }
+            if 'tiene_drenaje' in df.columns:
+                intervenciones['Drenaje'] = df['tiene_drenaje'].sum()
+            
             fig2 = px.bar(x=list(intervenciones.keys()), y=list(intervenciones.values()),
                          labels={'x': 'Intervención', 'y': 'Cantidad de Pacientes'},
                          color=list(intervenciones.keys()),
-                         color_discrete_sequence=['#2ca02c', '#d62728', '#9467bd'])
+                         color_discrete_sequence=['#2ca02c', '#d62728', '#9467bd', '#8c564b'])
             st.plotly_chart(fig2, use_container_width=True)
             
             # Distribución de edad
@@ -425,6 +561,65 @@ elif menu == "Ver Estadísticas":
                       labels={'Mes': 'Mes', 'Cantidad': 'Número de Ingresos'},
                       markers=True)
         st.plotly_chart(fig7, use_container_width=True)
+        
+        # Nuevos gráficos para campos agregados
+        st.markdown("---")
+        st.subheader("📊 Análisis de Nuevos Indicadores")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Destino post-UTI
+            if 'destino_post_uti' in df.columns:
+                st.subheader("Destino después de UTI")
+                destino_counts = df['destino_post_uti'].value_counts()
+                fig8 = px.pie(values=destino_counts.values, names=destino_counts.index,
+                            hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
+                fig8.update_traces(textposition='inside', textinfo='percent+label')
+                st.plotly_chart(fig8, use_container_width=True)
+            
+            # Tipos de drenaje
+            if 'tipo_drenaje' in df.columns:
+                st.subheader("Tipos de Drenaje Utilizados")
+                df_con_drenaje = df[df['tiene_drenaje'] == True]
+                if len(df_con_drenaje) > 0:
+                    drenaje_counts = df_con_drenaje['tipo_drenaje'].value_counts()
+                    fig9 = px.bar(x=drenaje_counts.index, y=drenaje_counts.values,
+                                labels={'x': 'Tipo de Drenaje', 'y': 'Cantidad'},
+                                color=drenaje_counts.index,
+                                color_discrete_sequence=['#ff9999', '#66b3ff'])
+                    st.plotly_chart(fig9, use_container_width=True)
+                else:
+                    st.info("No hay pacientes con drenaje registrado")
+        
+        with col2:
+            # Secuelas
+            if all(col in df.columns for col in ['secuelas_motora', 'secuelas_neurologica', 'secuelas_cognitiva']):
+                st.subheader("Secuelas Presentadas")
+                secuelas_data = {
+                    'Motora': df['secuelas_motora'].sum(),
+                    'Neurológica': df['secuelas_neurologica'].sum(),
+                    'Cognitiva': df['secuelas_cognitiva'].sum()
+                }
+                fig10 = px.bar(x=list(secuelas_data.keys()), y=list(secuelas_data.values()),
+                             labels={'x': 'Tipo de Secuela', 'y': 'Cantidad de Pacientes'},
+                             color=list(secuelas_data.keys()),
+                             color_discrete_sequence=['#ff6b6b', '#4ecdc4', '#45b7d1'])
+                st.plotly_chart(fig10, use_container_width=True)
+            
+            # Uso de casco en accidentes de moto
+            if 'llevaba_casco' in df.columns:
+                st.subheader("Uso de Casco en Accidentes de Moto")
+                df_motos = df[df['origen_tec'].str.contains('moto', case=False, na=False)]
+                if len(df_motos) > 0 and df_motos['llevaba_casco'].notna().any():
+                    casco_counts = df_motos['llevaba_casco'].value_counts()
+                    labels_casco = ['Con Casco' if x else 'Sin Casco' for x in casco_counts.index]
+                    fig11 = px.pie(values=casco_counts.values, names=labels_casco,
+                                 color_discrete_map={'Con Casco': '#2ecc71', 'Sin Casco': '#e74c3c'})
+                    fig11.update_traces(textposition='inside', textinfo='percent+label')
+                    st.plotly_chart(fig11, use_container_width=True)
+                else:
+                    st.info("No hay datos de uso de casco registrados")
         
         # Estadísticas descriptivas
         st.markdown("---")
@@ -515,6 +710,43 @@ elif menu == "Base de Datos":
                 st.write(f"**Días en UTI:** {paciente['dias_uti']}")
                 st.write(f"**Glasgow Ingreso:** {paciente['glasgow_ingreso']}")
                 st.write(f"**Glasgow Actual:** {paciente['glasgow_actual']}")
+            
+            # Nueva información agregada
+            st.markdown("---")
+            st.subheader("Información Adicional")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if 'destino_post_uti' in paciente.index and paciente['destino_post_uti']:
+                    st.write(f"**Destino post-UTI:** {paciente['destino_post_uti']}")
+                
+                if 'tiene_drenaje' in paciente.index:
+                    drenaje_info = "No"
+                    if paciente['tiene_drenaje']:
+                        tipo = paciente.get('tipo_drenaje', 'No especificado')
+                        drenaje_info = f"Sí - {tipo}"
+                    st.write(f"**Drenaje:** {drenaje_info}")
+                
+                if 'llevaba_casco' in paciente.index and paciente['llevaba_casco'] is not None:
+                    st.write(f"**Llevaba casco:** {'Sí' if paciente['llevaba_casco'] else 'No'}")
+            
+            with col2:
+                if any(col in paciente.index for col in ['secuelas_motora', 'secuelas_neurologica', 'secuelas_cognitiva']):
+                    st.write("**Secuelas:**")
+                    secuelas = []
+                    if paciente.get('secuelas_motora'):
+                        secuelas.append("Motora")
+                    if paciente.get('secuelas_neurologica'):
+                        secuelas.append("Neurológica")
+                    if paciente.get('secuelas_cognitiva'):
+                        secuelas.append("Cognitiva")
+                    
+                    if secuelas:
+                        for s in secuelas:
+                            st.write(f"  • {s}")
+                    else:
+                        st.write("  • Sin secuelas registradas")
             
             if paciente['observaciones']:
                 st.write(f"**Observaciones:** {paciente['observaciones']}")
