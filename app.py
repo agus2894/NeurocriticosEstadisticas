@@ -80,6 +80,17 @@ if menu == "Cargar Paciente":
                 "Otro"
             ])
             
+            # Campo de casco - solo para accidentes de moto
+            llevaba_casco = None
+            if origen_tec == "Accidente de tránsito (moto)":
+                st.markdown("**Uso de casco**")
+                llevaba_casco = st.radio(
+                    "¿Llevaba casco al momento del accidente?",
+                    options=[True, False],
+                    format_func=lambda x: "Sí, llevaba casco" if x else "No llevaba casco",
+                    horizontal=True
+                )
+            
             if origen_tec == "Otro":
                 origen_tec_otro = st.text_input("Especificar origen")
                 origen_tec = origen_tec_otro if origen_tec_otro else "Otro"
@@ -121,13 +132,6 @@ if menu == "Cargar Paciente":
             
             requiere_arm = st.checkbox("Requiere ARM (Asistencia Respiratoria Mecánica)")
             requiere_cranectomia = st.checkbox("Requiere Craniectomía")
-            
-            # Casco (solo para accidentes de moto)
-            llevaba_casco = None
-            if "moto" in origen_tec.lower():
-                st.markdown("---")
-                st.subheader("Información del Accidente")
-                llevaba_casco = st.checkbox("¿Llevaba casco puesto?")
             
             # Evolución
             dias_uti = st.number_input("Días de evolución en UTI*", min_value=0, value=1, 
@@ -593,6 +597,50 @@ elif menu == "Ver Estadísticas":
                     st.info("No hay pacientes con drenaje registrado")
         
         with col2:
+            # Uso de casco en accidentes de moto
+            if 'llevaba_casco' in df.columns:
+                st.subheader("Uso de Casco en Accidentes de Moto")
+                df_motos = df[df['origen_tec'].str.contains('moto', case=False, na=False)]
+                
+                if len(df_motos) > 0:
+                    # Contar casos con y sin casco
+                    casco_counts = df_motos['llevaba_casco'].value_counts()
+                    
+                    # Crear labels personalizados
+                    labels = []
+                    values = []
+                    colors = []
+                    
+                    if True in casco_counts.index:
+                        labels.append(f'Con casco ({casco_counts[True]})')
+                        values.append(casco_counts[True])
+                        colors.append('#2ecc71')  # Verde
+                    
+                    if False in casco_counts.index:
+                        labels.append(f'Sin casco ({casco_counts[False]})')
+                        values.append(casco_counts[False])
+                        colors.append('#e74c3c')  # Rojo
+                    
+                    fig_casco = px.pie(
+                        values=values, 
+                        names=labels,
+                        title=f"Total accidentes de moto: {len(df_motos)}",
+                        color_discrete_sequence=colors
+                    )
+                    fig_casco.update_traces(textposition='inside', textinfo='percent+label')
+                    st.plotly_chart(fig_casco, use_container_width=True)
+                    
+                    # Métricas adicionales
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        pct_con_casco = (casco_counts.get(True, 0) / len(df_motos) * 100)
+                        st.metric("% Con casco", f"{pct_con_casco:.1f}%")
+                    with col_b:
+                        pct_sin_casco = (casco_counts.get(False, 0) / len(df_motos) * 100)
+                        st.metric("% Sin casco", f"{pct_sin_casco:.1f}%")
+                else:
+                    st.info("No hay accidentes de moto registrados")
+            
             # Secuelas
             if all(col in df.columns for col in ['secuelas_motora', 'secuelas_neurologica', 'secuelas_cognitiva']):
                 st.subheader("Secuelas Presentadas")
