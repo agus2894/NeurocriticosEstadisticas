@@ -11,7 +11,7 @@ port = 8501
 enableCORS = false
 
 [client]
-toolbarMode = "minimal"
+toolbarMode = "viewer"
 showErrorDetails = false
 
 [browser]
