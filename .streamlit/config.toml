@@ -9,3 +9,10 @@ font = "sans serif"
 headless = true
 port = 8501
 enableCORS = false
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = false
+
+[browser]
+gatherUsageStats = false
