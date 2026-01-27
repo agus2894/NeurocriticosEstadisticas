@@ -7,7 +7,7 @@ import database as db
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Registro TEC - UTI",
+    page_title="Registro de Pacientes Neurocriticos - UTI",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -42,7 +42,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Título principal
-st.markdown('<p class="main-header">🏥 Registro de Pacientes con TEC - UTI</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-header">🏥 Registro de Pacientes neurocriticos - UTI</p>', unsafe_allow_html=True)
 
 # Menú lateral
 menu = st.sidebar.selectbox(
