@@ -45,10 +45,9 @@ st.markdown("""
 st.markdown('<p class="main-header">🏥 Registro de Pacientes neurocriticos - UTI</p>', unsafe_allow_html=True)
 
 # Mostrar tipo de base de datos
-db_info = db.get_db_info()
-st.sidebar.markdown(f"**{db_info['icono']} Base de Datos:** {db_info['tipo']}")
-if db_info['multiusuario']:
-    st.sidebar.success("✅ Modo colaborativo activo")
+db_nombre, db_tipo = db.get_db_info()
+st.sidebar.markdown(f"**Base de Datos:** {db_nombre}")
+st.sidebar.success("✅ Modo colaborativo activo")
 st.sidebar.markdown("---")
 
 # Menú lateral
