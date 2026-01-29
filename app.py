@@ -182,10 +182,12 @@ db_nombre, db_tipo = db.get_db_info()
 st.sidebar.markdown(f"**Base de Datos:** {db_nombre}")
 st.sidebar.markdown("---")
 
-# Menú lateral
-menu = st.sidebar.selectbox(
-    "📋 Menú",
-    ["Cargar Paciente", "Evolucionar Paciente", "Ver Estadísticas", "Base de Datos", "Exportar Datos"]
+# Menú lateral (radio buttons siempre visible)
+st.sidebar.markdown("### 📋 Menú")
+menu = st.sidebar.radio(
+    "Selecciona una opción:",
+    ["Cargar Paciente", "Evolucionar Paciente", "Ver Estadísticas", "Base de Datos", "Exportar Datos"],
+    label_visibility="collapsed"
 )
 
 # ==================== CARGAR PACIENTE ====================
