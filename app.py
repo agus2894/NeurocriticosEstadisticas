@@ -218,6 +218,10 @@ if menu == "Cargar Paciente":
                 
                 if exito:
                     st.success("✅ Paciente registrado exitosamente!")
+                    st.info("👉 Recargando formulario para nuevo paciente...")
+                    import time
+                    time.sleep(1.5)
+                    st.rerun()
                 else:
                     st.error("❌ Error: Ya existe un paciente con ese número de historia clínica")
 
