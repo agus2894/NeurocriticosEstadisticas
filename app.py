@@ -5,6 +5,10 @@ import plotly.graph_objects as go
 from datetime import datetime, date
 import db_adapter as db
 
+# Paleta de colores coordinada para gráficos
+MEDICAL_COLORS = ['#0066cc', '#00a8e1', '#00c9a7', '#28a745', '#20c997', 
+                  '#6610f2', '#e83e8c', '#fd7e14', '#ffc107', '#6c757d']
+
 # Configuración de la página
 st.set_page_config(
     page_title="Registro de Pacientes Neurocriticos - UTI",
@@ -19,45 +23,153 @@ db.init_db()
 # CSS personalizado
 st.markdown("""
     <style>
+    /* Paleta de colores médica profesional */
+    :root {
+        --primary-blue: #0066cc;
+        --dark-blue: #003d7a;
+        --success-green: #28a745;
+        --light-gray: #f8f9fa;
+        --border-gray: #e0e0e0;
+    }
+    
+    /* Header principal */
     .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--dark-blue);
         text-align: center;
         margin-bottom: 2rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
+    
+    /* Tarjetas con sombra */
+    .stForm {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 1px solid var(--border-gray);
+        margin-bottom: 2rem;
+    }
+    
+    /* Secciones alternas con fondo */
+    div[data-testid="column"] {
+        background: var(--light-gray);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        margin: 0.5rem 0;
+    }
+    
+    /* Subheaders con estilo */
+    .stMarkdown h3 {
+        color: var(--primary-blue);
+        font-weight: 600;
+        border-bottom: 2px solid var(--primary-blue);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Botones personalizados */
+    .stButton > button {
+        background: linear-gradient(135deg, var(--success-green) 0%, #20c997 100%);
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        padding: 0.75rem 2rem;
+        border-radius: 0.75rem;
+        border: none;
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+    }
+    
+    /* Métricas con diseño mejorado */
     .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border-left: 4px solid #1f77b4;
+        background: linear-gradient(135deg, #ffffff 0%, var(--light-gray) 100%);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border-left: 5px solid var(--primary-blue);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        transition: transform 0.2s ease;
     }
+    
+    .metric-card:hover {
+        transform: translateX(5px);
+    }
+    
+    /* Separadores elegantes */
+    hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(to right, transparent, var(--border-gray), transparent);
+        margin: 1.5rem 0;
+    }
+    
+    /* Animaciones sutiles */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .stMarkdown, .stSelectbox, .stTextInput, .stNumberInput {
+        animation: fadeIn 0.3s ease;
+    }
+    
     /* Hacer el sidebar fijo al hacer scroll */
     [data-testid="stSidebar"] {
         position: fixed;
         height: 100vh;
         overflow-y: auto;
     }
+    
     /* Aumentar tamaño y espaciado del menú */
     [data-testid="stSidebar"] .stRadio > label {
         font-size: 1.1rem;
         font-weight: 600;
         margin-bottom: 1rem;
     }
+    
     [data-testid="stSidebar"] .stRadio > div {
         gap: 1.5rem;
     }
+    
     [data-testid="stSidebar"] .stRadio > div > label {
         font-size: 1.05rem;
         padding: 0.75rem 0.5rem;
         border-radius: 0.5rem;
         transition: all 0.2s;
     }
+    
     [data-testid="stSidebar"] .stRadio > div > label:hover {
         background-color: #f0f2f6;
     }
+    
     [data-testid="stSidebar"] .stRadio > div > label > div {
         gap: 0.75rem;
+    }
+    
+    /* Mejorar inputs */
+    input, textarea, select {
+        border-radius: 0.5rem !important;
+        border: 2px solid var(--border-gray) !important;
+        transition: border-color 0.2s ease !important;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+        border-color: var(--primary-blue) !important;
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1) !important;
+    }
+    
+    /* Mensajes de éxito/error más vistosos */
+    .stSuccess, .stError, .stWarning, .stInfo {
+        border-radius: 0.75rem;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -70,12 +182,10 @@ db_nombre, db_tipo = db.get_db_info()
 st.sidebar.markdown(f"**Base de Datos:** {db_nombre}")
 st.sidebar.markdown("---")
 
-# Menú lateral (radio buttons siempre visible)
-st.sidebar.markdown("### 📋 Menú")
-menu = st.sidebar.radio(
-    "Selecciona una opción:",
-    ["Cargar Paciente", "Evolucionar Paciente", "Ver Estadísticas", "Base de Datos", "Exportar Datos"],
-    label_visibility="collapsed"
+# Menú lateral
+menu = st.sidebar.selectbox(
+    "📋 Menú",
+    ["Cargar Paciente", "Evolucionar Paciente", "Ver Estadísticas", "Base de Datos", "Exportar Datos"]
 )
 
 # ==================== CARGAR PACIENTE ====================
@@ -199,10 +309,11 @@ if menu == "Cargar Paciente":
         
         st.markdown("---")
         
-        # Botón de envío
-        col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+        # Botón de envío destacado
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
         with col_btn2:
-            submitted = st.form_submit_button("💾 Guardar Paciente", use_container_width=True)
+            submitted = st.form_submit_button("💾 GUARDAR PACIENTE", use_container_width=True, type="primary")
         
         if submitted:
             # Validar campos obligatorios
@@ -529,25 +640,29 @@ elif menu == "Ver Estadísticas":
         
         with col1:
             # Origen del TEC
-            st.subheader("Origen del TEC")
+            st.subheader("🚑 Origen del TEC")
             origen_counts = df['origen_tec'].value_counts()
             fig1 = px.pie(values=origen_counts.values, names=origen_counts.index, 
-                         hole=0.4, color_discrete_sequence=px.colors.qualitative.Set3)
-            fig1.update_traces(textposition='inside', textinfo='percent+label')
+                         hole=0.4, color_discrete_sequence=MEDICAL_COLORS)
+            fig1.update_traces(textposition='inside', textinfo='percent+label',
+                             textfont_size=14, marker=dict(line=dict(color='white', width=2)))
+            fig1.update_layout(font=dict(size=13))
             st.plotly_chart(fig1, use_container_width=True)
             
             # Distribución por sexo
-            st.subheader("Distribución por Sexo")
+            st.subheader("👥 Distribución por Sexo")
             sexo_counts = df['sexo'].value_counts()
             fig3 = px.bar(x=sexo_counts.index, y=sexo_counts.values,
                          labels={'x': 'Sexo', 'y': 'Cantidad'},
                          color=sexo_counts.index,
-                         color_discrete_map={'Masculino': '#1f77b4', 'Femenino': '#ff7f0e'})
+                         color_discrete_map={'Masculino': '#0066cc', 'Femenino': '#e83e8c'})
+            fig3.update_layout(showlegend=False, font=dict(size=13))
+            fig3.update_traces(marker=dict(line=dict(color='white', width=2)))
             st.plotly_chart(fig3, use_container_width=True)
         
         with col2:
             # Intervenciones
-            st.subheader("Intervenciones Realizadas")
+            st.subheader("⚕️ Intervenciones Realizadas")
             intervenciones = {
                 'PIC': df['requiere_pic'].sum(),
                 'ARM': df['requiere_arm'].sum(),
@@ -559,14 +674,18 @@ elif menu == "Ver Estadísticas":
             fig2 = px.bar(x=list(intervenciones.keys()), y=list(intervenciones.values()),
                          labels={'x': 'Intervención', 'y': 'Cantidad de Pacientes'},
                          color=list(intervenciones.keys()),
-                         color_discrete_sequence=['#2ca02c', '#d62728', '#9467bd', '#8c564b'])
+                         color_discrete_sequence=MEDICAL_COLORS)
+            fig2.update_layout(showlegend=False, font=dict(size=13))
+            fig2.update_traces(marker=dict(line=dict(color='white', width=2)))
             st.plotly_chart(fig2, use_container_width=True)
             
             # Distribución de edad
-            st.subheader("Distribución por Edad")
+            st.subheader("📊 Distribución por Edad")
             fig4 = px.histogram(df, x='edad', nbins=20,
                               labels={'edad': 'Edad', 'count': 'Frecuencia'},
-                              color_discrete_sequence=['#17becf'])
+                              color_discrete_sequence=['#0066cc'])
+            fig4.update_layout(font=dict(size=13))
+            fig4.update_traces(marker=dict(line=dict(color='white', width=1)))
             st.plotly_chart(fig4, use_container_width=True)
         
         st.markdown("---")
