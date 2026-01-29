@@ -32,12 +32,6 @@ st.markdown("""
         border-radius: 0.5rem;
         border-left: 4px solid #1f77b4;
     }
-    /* Ocultar menú de GitHub y botones de Streamlit Cloud */
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stDeployButton {display: none;}
-    [data-testid="stToolbar"] {display: none;}
     </style>
 """, unsafe_allow_html=True)
 
