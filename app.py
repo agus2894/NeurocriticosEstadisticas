@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, date
-import database as db
+import db_adapter as db
 
 # Configuración de la página
 st.set_page_config(
@@ -43,6 +43,13 @@ st.markdown("""
 
 # Título principal
 st.markdown('<p class="main-header">🏥 Registro de Pacientes neurocriticos - UTI</p>', unsafe_allow_html=True)
+
+# Mostrar tipo de base de datos
+db_info = db.get_db_info()
+st.sidebar.markdown(f"**{db_info['icono']} Base de Datos:** {db_info['tipo']}")
+if db_info['multiusuario']:
+    st.sidebar.success("✅ Modo colaborativo activo")
+st.sidebar.markdown("---")
 
 # Menú lateral
 menu = st.sidebar.selectbox(

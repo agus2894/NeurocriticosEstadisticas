@@ -3,6 +3,11 @@
 *.sqlite
 *.sqlite3
 
+# Credenciales y secrets
+*.json
+.streamlit/secrets.toml
+.env
+
 # Python
 __pycache__/
 *.py[cod]
