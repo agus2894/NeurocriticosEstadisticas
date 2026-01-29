@@ -32,6 +32,33 @@ st.markdown("""
         border-radius: 0.5rem;
         border-left: 4px solid #1f77b4;
     }
+    /* Hacer el sidebar fijo al hacer scroll */
+    [data-testid="stSidebar"] {
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+    }
+    /* Aumentar tamaño y espaciado del menú */
+    [data-testid="stSidebar"] .stRadio > label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    [data-testid="stSidebar"] .stRadio > div {
+        gap: 1.5rem;
+    }
+    [data-testid="stSidebar"] .stRadio > div > label {
+        font-size: 1.05rem;
+        padding: 0.75rem 0.5rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+    [data-testid="stSidebar"] .stRadio > div > label:hover {
+        background-color: #f0f2f6;
+    }
+    [data-testid="stSidebar"] .stRadio > div > label > div {
+        gap: 0.75rem;
+    }
     </style>
 """, unsafe_allow_html=True)
 
