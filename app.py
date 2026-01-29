@@ -23,6 +23,16 @@ db.init_db()
 # CSS personalizado
 st.markdown("""
     <style>
+    /* Ocultar menú de Streamlit */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display: none;}
+    [data-testid="stToolbar"] {display: none;}
+    [data-testid="stDecoration"] {display: none;}
+    [data-testid="stStatusWidget"] {display: none;}
+    button[kind="header"] {display: none;}
+    
     /* Paleta de colores médica profesional */
     :root {
         --primary-blue: #0066cc;
