@@ -47,7 +47,6 @@ st.markdown('<p class="main-header">🏥 Registro de Pacientes neurocriticos - U
 # Mostrar tipo de base de datos
 db_nombre, db_tipo = db.get_db_info()
 st.sidebar.markdown(f"**Base de Datos:** {db_nombre}")
-st.sidebar.success("✅ Modo colaborativo activo")
 st.sidebar.markdown("---")
 
 # Menú lateral
